@@ -1,0 +1,117 @@
+Drawing Conclusions
+Use the space below to address questions on datasets clean_08.csv and clean_18.csv. You should've created these data files in the previous section: Fixing Data Types Pt 3.
+
+# load datasets
+import pandas as pd
+import numpy as np
+% matplotlib inline
+import matplotlib.pyplot as plt
+df_08 = pd.read_csv('clean_08.csv')
+df_18 = pd.read_csv('clean_18.csv')
+​
+Q1: Are more unique models using alternative sources of fuel? By how much?
+df_08.fuel.value_counts()
+Gasoline    984
+CNG           1
+gas           1
+ethanol       1
+Name: fuel, dtype: int64
+df_18.shape
+(832, 13)
+df_18.fuel.value_counts()
+Gasoline       749
+Ethanol         26
+Gas             26
+Diesel          19
+Electricity     12
+Name: fuel, dtype: int64
+alt_08 = df_08.query('fuel in ["CNG", "ethanol"]').model.nunique()
+alt_08
+2
+alt_18 = df_18.query('fuel in ["Ethanol", "Electricity"]').model.nunique()
+alt_18
+26
+plt.bar(["2008", "2018"], [alt_08, alt_18 ])
+plt.title('Number Of Unique Models Using Alternative Fuels')
+plt.xlabel('Year')
+plt.ylabel('Number Of Unique Models')
+Text(0,0.5,'Number Of Unique Models')
+
+Q2: How much have vehicle classes improved in fuel economy?
+df_08.head(0)
+model	displ	cyl	trans	drive	fuel	veh_class	air_pollution_score	city_mpg	hwy_mpg	cmb_mpg	greenhouse_gas_score	smartway
+df_08['veh_class'].unique()
+array(['SUV', 'midsize car', 'small car', 'station wagon', 'large car',
+       'minivan', 'van', 'pickup'], dtype=object)
+veh_08 = df_08.groupby('veh_class').cmb_mpg.mean()
+veh_08
+veh_class
+SUV              18.471429
+large car        18.509091
+midsize car      21.601449
+minivan          19.117647
+pickup           16.277108
+small car        21.105105
+station wagon    22.366667
+van              14.952381
+Name: cmb_mpg, dtype: float64
+veh_18 = df_18.groupby('veh_class').cmb_mpg.mean()
+veh_18
+veh_class
+large car          23.409091
+midsize car        27.884058
+minivan            20.800000
+pickup             18.589744
+small SUV          24.074074
+small car          25.421053
+special purpose    18.500000
+standard SUV       18.197674
+station wagon      27.529412
+Name: cmb_mpg, dtype: float64
+inc = veh_18-veh_08
+inc
+veh_class
+SUV                     NaN
+large car          4.900000
+midsize car        6.282609
+minivan            1.682353
+pickup             2.312635
+small SUV               NaN
+small car          4.315948
+special purpose         NaN
+standard SUV            NaN
+station wagon      5.162745
+van                     NaN
+Name: cmb_mpg, dtype: float64
+inc.dropna(inplace=True)
+plt.subplots(figsize=(8, 5))
+plt.bar(inc.index, inc)
+plt.title('Improvements in Fuel Economy from 2008 to 2018 by Vehicle Class')
+plt.xlabel('Vehicle Class')
+plt.ylabel('Increase in Average Combined MPG');
+
+Q3: What are the characteristics of SmartWay vehicles? Have they changed over time?
+df_08['smartway'].unique()
+array(['no', 'yes'], dtype=object)
+smart_08 = df_08.query('smartway == "yes"')
+smart_08.describe()
+displ	cyl	air_pollution_score	city_mpg	hwy_mpg	cmb_mpg	greenhouse_gas_score
+count	380.000000	380.000000	380.000000	380.000000	380.000000	380.000000	380.000000
+mean	2.602895	4.826316	7.365789	20.984211	28.413158	23.736842	6.868421
+std	0.623436	1.002025	1.148195	3.442672	3.075194	3.060379	0.827338
+min	1.300000	4.000000	6.000000	17.000000	22.000000	20.000000	6.000000
+25%	2.275000	4.000000	7.000000	19.000000	26.000000	22.000000	6.000000
+50%	2.400000	4.000000	7.000000	20.000000	28.000000	23.000000	7.000000
+75%	3.000000	6.000000	7.000000	22.000000	30.000000	25.000000	7.000000
+max	5.000000	8.000000	9.500000	48.000000	45.000000	46.000000	10.000000
+smart_08 = df_08.query('smartway == "no"')
+smart_08.describe()
+displ	cyl	air_pollution_score	city_mpg	hwy_mpg	cmb_mpg	greenhouse_gas_score
+count	607.000000	607.000000	607.000000	607.000000	607.000000	607.000000	607.000000
+mean	4.056837	6.771005	6.293245	15.133443	21.299835	17.316310	4.149918
+std	1.203933	1.882335	0.551479	2.564736	3.366852	2.766868	1.629634
+min	1.300000	2.000000	4.000000	8.000000	13.000000	10.000000	0.000000
+25%	3.200000	6.000000	6.000000	13.000000	19.000000	15.000000	3.000000
+50%	3.800000	6.000000	6.000000	15.000000	21.000000	18.000000	5.000000
+75%	4.900000	8.000000	7.000000	17.000000	24.000000	19.000000	5.000000
+max	8.400000	16.000000	9.500000	21.000000	28.000000	23.000000	7.0000
